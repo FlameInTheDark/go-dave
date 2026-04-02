@@ -237,6 +237,25 @@ func TestGatewayBinaryEndToEndRoundTrip(t *testing.T) {
 	}
 }
 
+func TestEncryptedFramesDoNotPassthroughWithoutMatchingDecryptor(t *testing.T) {
+	alice, bob := createActiveSessionPair(t)
+	bob.SetPassthroughMode(true)
+
+	frame := []byte{0xde, 0xad, 0xbe, 0xef}
+	encrypted, err := alice.EncryptOpus(frame)
+	if err != nil {
+		t.Fatalf("alice EncryptOpus() failed: %v", err)
+	}
+
+	decrypted, err := bob.Decrypt("999999999999999999", MediaTypeAudio, encrypted)
+	if err == nil {
+		t.Fatalf("expected decrypt without matching decryptor to fail, got frame=%x", decrypted)
+	}
+	if bytes.Equal(decrypted, encrypted) {
+		t.Fatal("expected encrypted frame to be dropped, not passed through unchanged")
+	}
+}
+
 func createActiveSessionPair(t *testing.T) (*DAVESession, *DAVESession) {
 	t.Helper()
 

@@ -267,6 +267,14 @@ async function main() {
     assert.equal(droppedPlaintext, null)
     assert(warningMessages.some((message) => message.includes('decrypt') && message.includes('unencrypted frame')))
 
+    const droppedEncryptedWrongUser = bob.decrypt(
+      '999999999999999999',
+      GoDave.MediaType.AUDIO,
+      encryptedOpus,
+    )
+    assert.equal(droppedEncryptedWrongUser, null)
+    assert(warningMessages.some((message) => message.includes('decrypt') && message.includes('no decryptor exists')))
+
     const encryptedAgain = alice.encryptOpus(opusFrame)
     assert(encryptedAgain instanceof Uint8Array)
     const decryptedAgain = bob.decrypt(aliceId, GoDave.MediaType.AUDIO, encryptedAgain)
