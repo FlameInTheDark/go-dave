@@ -172,6 +172,20 @@ func TestActiveSessionHelpers(t *testing.T) {
 	}
 }
 
+func TestSetPassthroughModeCanDisableImmediately(t *testing.T) {
+	active := createTestSession(t, SessionStatusActive)
+
+	if !active.CanPassthrough(testOtherUserID) {
+		t.Fatal("expected active session to begin in passthrough mode")
+	}
+
+	active.SetPassthroughMode(false, 0)
+
+	if active.CanPassthrough(testOtherUserID) {
+		t.Fatal("expected passthrough mode to disable immediately")
+	}
+}
+
 func createTestSession(t *testing.T, status SessionStatus) *DAVESession {
 	t.Helper()
 

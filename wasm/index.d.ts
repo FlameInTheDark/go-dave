@@ -73,10 +73,10 @@ export interface GoDaveSession {
   handleGatewayBinaryMessage(sequence: number, opcode: number, payload: Uint8Array | ArrayBuffer, recognizedUserIds?: string[] | null): GatewayBinaryResult
   getVerificationCode(userId: string): string
   getPairwiseFingerprint(version: number, userId: string): Uint8Array
-  encrypt(mediaType: number, codec: number, packet: Uint8Array | ArrayBuffer): Uint8Array
-  encryptOpus(packet: Uint8Array | ArrayBuffer): Uint8Array
+  encrypt(mediaType: number, codec: number, packet: Uint8Array | ArrayBuffer): Uint8Array | null
+  encryptOpus(packet: Uint8Array | ArrayBuffer): Uint8Array | null
   getEncryptionStats(mediaType?: number | null): EncryptionStats
-  decrypt(userId: string, mediaType: number, packet: Uint8Array | ArrayBuffer): Uint8Array
+  decrypt(userId: string, mediaType: number, packet: Uint8Array | ArrayBuffer): Uint8Array | null
   getDecryptionStats(userId: string, mediaType?: number | null): DecryptionStats
   getUserIds(): string[]
   canPassthrough(userId: string): boolean

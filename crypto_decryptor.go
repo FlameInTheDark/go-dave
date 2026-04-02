@@ -112,6 +112,11 @@ func (d *decryptor) transitionToPassthroughMode(mode bool, transitionExpiry uint
 		return
 	}
 	newExpiry := time.Now().Add(time.Duration(transitionExpiry) * time.Second)
+	if transitionExpiry == 0 {
+		d.allowPassthroughUntil = newExpiry
+		d.hasPassthroughDeadline = true
+		return
+	}
 	if !d.hasPassthroughDeadline || newExpiry.After(d.allowPassthroughUntil) {
 		d.allowPassthroughUntil = newExpiry
 		d.hasPassthroughDeadline = true

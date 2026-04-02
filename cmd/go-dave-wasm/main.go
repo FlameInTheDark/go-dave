@@ -26,6 +26,8 @@ type jsSession struct {
 	funcs   []js.Func
 }
 
+const jsErrorMarker = "__goDaveError"
+
 func main() {
 	module := js.Global().Get("Object").New()
 	module.Set("DAVE_PROTOCOL_VERSION", dave.DAVEProtocolVersion)
@@ -112,7 +114,11 @@ func main() {
 		if err != nil {
 			return throw(err)
 		}
-		fingerprint, err := dave.GenerateKeyFingerprint(uint16(args[0].Int()), key, mustParseUint64(args[2].String()))
+		userID, err := parseUint64(args[2].String())
+		if err != nil {
+			return throw(err)
+		}
+		fingerprint, err := dave.GenerateKeyFingerprint(uint16(args[0].Int()), key, userID)
 		if err != nil {
 			return throw(err)
 		}
@@ -130,12 +136,20 @@ func main() {
 		if err != nil {
 			return throw(err)
 		}
+		localUserID, err := parseUint64(args[2].String())
+		if err != nil {
+			return throw(err)
+		}
+		remoteUserID, err := parseUint64(args[4].String())
+		if err != nil {
+			return throw(err)
+		}
 		fingerprint, err := dave.GeneratePairwiseFingerprint(
 			uint16(args[0].Int()),
 			localKey,
-			mustParseUint64(args[2].String()),
+			localUserID,
 			remoteKey,
-			mustParseUint64(args[4].String()),
+			remoteUserID,
 		)
 		if err != nil {
 			return throw(err)
@@ -600,7 +614,7 @@ func newJSSession(session *dave.DAVESession) js.Value {
 }
 
 func (s *jsSession) setMethod(obj js.Value, name string, fn func(this js.Value, args []js.Value) any) {
-	method := js.FuncOf(fn)
+	method := guardedJSFunc(fn)
 	s.funcs = append(s.funcs, method)
 	obj.Set(name, method)
 }
@@ -625,7 +639,7 @@ func (s *jsSession) release() {
 }
 
 func setModuleFunc(obj js.Value, name string, fn func(this js.Value, args []js.Value) any) {
-	value := js.FuncOf(fn)
+	value := guardedJSFunc(fn)
 	moduleFuncs = append(moduleFuncs, value)
 	obj.Set(name, value)
 }
@@ -637,16 +651,51 @@ func argsAt(args []js.Value, index int) js.Value {
 	return args[index]
 }
 
-func throw(err error) any {
-	panic(js.Error{Value: js.Global().Get("Error").New(err.Error())})
+func guardedJSFunc(fn func(this js.Value, args []js.Value) any) js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) (result any) {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				result = panicResult(recovered)
+			}
+		}()
+		return fn(this, args)
+	})
 }
 
-func mustParseUint64(value string) uint64 {
+func throw(err error) any {
+	return errorResult(err, false)
+}
+
+func panicResult(recovered any) any {
+	switch value := recovered.(type) {
+	case error:
+		return errorResult(value, true)
+	case string:
+		return errorResult(errors.New(value), true)
+	default:
+		return errorResult(fmt.Errorf("%v", value), true)
+	}
+}
+
+func errorResult(err error, panicked bool) js.Value {
+	obj := js.Global().Get("Object").New()
+	obj.Set(jsErrorMarker, true)
+	obj.Set("message", err.Error())
+	if panicked {
+		obj.Set("name", "GoDavePanic")
+	} else {
+		obj.Set("name", "GoDaveError")
+	}
+	obj.Set("panic", panicked)
+	return obj
+}
+
+func parseUint64(value string) (uint64, error) {
 	parsed, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		throw(fmt.Errorf("parse uint64 %q: %w", value, err))
+		return 0, fmt.Errorf("parse uint64 %q: %w", value, err)
 	}
-	return parsed
+	return parsed, nil
 }
 
 func bytesFromJS(value js.Value) ([]byte, error) {
