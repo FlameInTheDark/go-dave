@@ -1,0 +1,45 @@
+{
+  "name": "@flameinthedark/go-dave",
+  "version": "0.1.0",
+  "description": "DAVE session management and WebRTC frame encryption for browser and Electron apps",
+  "license": "MIT",
+  "type": "module",
+  "main": "./index.mjs",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlameInTheDark/go-dave.git",
+    "directory": "wasm"
+  },
+  "homepage": "https://github.com/FlameInTheDark/go-dave#readme",
+  "bugs": {
+    "url": "https://github.com/FlameInTheDark/go-dave/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "default": "./index.mjs"
+    },
+    "./go-dave.wasm": "./go-dave.wasm",
+    "./wasm_exec.js": "./wasm_exec.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README.md",
+    "index.d.ts",
+    "index.mjs",
+    "go-dave.wasm",
+    "wasm_exec.js"
+  ],
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "prepack": "node ./scripts/build.mjs"
+  },
+  "sideEffects": false
+}

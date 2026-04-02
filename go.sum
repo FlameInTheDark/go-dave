@@ -1,0 +1,6 @@
+github.com/thomas-vilte/mls-go v1.0.0 h1:Dr8z1lJA8315RRnDsWW10HjkHWXHpqM/QgqD03YVGLU=
+github.com/thomas-vilte/mls-go v1.0.0/go.mod h1:t+PHA9PzoXUyw/TbNDwKJKpjmLIc4wUOJTIoqHqNYxA=
+golang.org/x/crypto v0.48.0 h1:/VRzVqiRSggnhY7gNRxPauEQ5Drw9haKdM0jqfcCFts=
+golang.org/x/crypto v0.48.0/go.mod h1:r0kV5h3qnFPlQnBSrULhlsRfryS2pmewsg+XfMgkVos=
+golang.org/x/sys v0.42.0 h1:omrd2nAlyT5ESRdCLYdm3+fMfNFE/+Rf4bDIQImRJeo=
+golang.org/x/sys v0.42.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
