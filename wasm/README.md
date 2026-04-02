@@ -4,23 +4,19 @@ This folder contains the browser and Electron bridge for `go-dave`.
 
 It exposes the same core session flow as the native Go package, but with a `Uint8Array`-first API that fits WebRTC transforms and gateway packet handling naturally.
 
-## Build
+## Install
 
-PowerShell:
-
-```powershell
-Copy-Item "$(go env GOROOT)\lib\wasm\wasm_exec.js" .\wasm\
-$env:GOOS = 'js'
-$env:GOARCH = 'wasm'
-go build -o .\wasm\go-dave.wasm .\cmd\go-dave-wasm
+```bash
+npm install @flameinthedark/go-dave
 ```
 
-That gives you:
+For local testing straight from this repo:
 
-- `wasm_exec.js` from the Go toolchain runtime
-- `go-dave.wasm` built from [`cmd/go-dave-wasm/main.go`](/H:/Projects/Go/src/github.com/FlameInTheDark/go-dave/cmd/go-dave-wasm/main.go)
-- [`index.mjs`](/H:/Projects/Go/src/github.com/FlameInTheDark/go-dave/wasm/index.mjs) as the loader
-- [`index.d.ts`](/H:/Projects/Go/src/github.com/FlameInTheDark/go-dave/wasm/index.d.ts) for TypeScript consumers
+```bash
+npm install file:../go-dave/wasm
+```
+
+The package already includes `go-dave.wasm` and `wasm_exec.js`, so app consumers do not need Go installed.
 
 ## Load
 
@@ -36,21 +32,46 @@ const GoDave = await loadGoDave({
 
 If your Electron build loads assets from `file://` instead of an HTTP origin, pass a custom `fetch` implementation that can read local files and keep the same loader API.
 
-## Install with npm
+## Quick start
 
-You can install the WASM package directly from this repo path:
+If you already handle the gateway yourself, the common session flow is intentionally small and close to the direct DAVE lifecycle:
 
-```bash
-npm install file:../go-dave/wasm
+```ts
+import { loadGoDave } from '@flameinthedark/go-dave'
+
+const GoDave = await loadGoDave()
+const session = GoDave.createSession(
+  GoDave.DAVE_PROTOCOL_VERSION,
+  '158049329150427136',
+  '927310423890473011',
+)
+
+session.setExternalSender(externalSenderBuffer)
+
+const keyPackage = session.getSerializedKeyPackage()
+
+const result = session.processProposals(
+  GoDave.ProposalsOperationType.APPEND,
+  proposalsBuffer,
+  recognizedUserIds,
+)
+
+if (result.commit) {
+  session.processCommit(result.commit)
+}
+
+if (welcomeBuffer) {
+  session.processWelcome(welcomeBuffer)
+}
+
+if (session.getState().ready) {
+  const encrypted = session.encryptOpus(packet)
+  const decrypted = session.decrypt(remoteUserId, GoDave.MediaType.AUDIO, encrypted)
+  console.log(decrypted)
+}
 ```
 
-The published package name is `@flameinthedark/go-dave`, so once it is on npm the install becomes:
-
-```bash
-npm install @flameinthedark/go-dave
-```
-
-The package includes `go-dave.wasm` itself together with `wasm_exec.js`. The `prepack` step builds both assets before publish, so consumers do not need Go installed.
+Use the longer packet-based example below only when you want the library to help you parse and build the binary gateway packets too.
 
 ## Main WASM API
 
@@ -308,3 +329,28 @@ export function attachDaveReceiverTransform(
     .catch(() => {})
 }
 ```
+
+## Build from source
+
+Shell:
+
+```sh
+cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" ./wasm/
+GOOS=js GOARCH=wasm go build -o ./wasm/go-dave.wasm ./cmd/go-dave-wasm
+```
+
+PowerShell:
+
+```powershell
+Copy-Item "$(go env GOROOT)\lib\wasm\wasm_exec.js" .\wasm\
+$env:GOOS = 'js'
+$env:GOARCH = 'wasm'
+go build -o .\wasm\go-dave.wasm .\cmd\go-dave-wasm
+```
+
+That gives you:
+
+- `wasm_exec.js` from the Go toolchain runtime
+- `go-dave.wasm` built from [`cmd/go-dave-wasm/main.go`](/H:/Projects/Go/src/github.com/FlameInTheDark/go-dave/cmd/go-dave-wasm/main.go)
+- [`index.mjs`](/H:/Projects/Go/src/github.com/FlameInTheDark/go-dave/wasm/index.mjs) as the loader
+- [`index.d.ts`](/H:/Projects/Go/src/github.com/FlameInTheDark/go-dave/wasm/index.d.ts) for TypeScript consumers

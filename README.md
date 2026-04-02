@@ -30,6 +30,41 @@ For browser or Electron apps:
 npm install @flameinthedark/go-dave
 ```
 
+## Quick start
+
+For browser or Electron apps, the simplest flow is:
+
+```ts
+import { loadGoDave } from '@flameinthedark/go-dave'
+
+const GoDave = await loadGoDave()
+const session = GoDave.createSession(GoDave.DAVE_PROTOCOL_VERSION, userId, channelId)
+
+session.setExternalSender(externalSenderBuffer)
+
+const keyPackage = session.getSerializedKeyPackage()
+const result = session.processProposals(
+  GoDave.ProposalsOperationType.APPEND,
+  proposalsBuffer,
+  recognizedUserIds,
+)
+
+if (result.commit) {
+  session.processCommit(result.commit)
+}
+
+if (welcomeBuffer) {
+  session.processWelcome(welcomeBuffer)
+}
+
+if (session.getState().ready) {
+  session.encryptOpus(packet)
+  session.decrypt(remoteUserId, GoDave.MediaType.AUDIO, incomingPacket)
+}
+```
+
+For the full React/TypeScript walkthrough, see [`wasm/README.md`](./wasm/README.md). The lower sections in this README cover native Go flows, packet helpers, and lower-level details.
+
 ## Examples
 
 - Runnable native example: [`examples/native/main.go`](./examples/native/main.go)
@@ -320,6 +355,35 @@ const session = GoDave.createSession(
   '9001',
 )
 ```
+
+For the common case, usage can stay at the session level:
+
+```ts
+const session = GoDave.createSession(GoDave.DAVE_PROTOCOL_VERSION, userId, channelId)
+session.setExternalSender(externalSenderBuffer)
+
+const keyPackage = session.getSerializedKeyPackage()
+const result = session.processProposals(
+  GoDave.ProposalsOperationType.APPEND,
+  proposalsBuffer,
+  recognizedUserIds,
+)
+
+if (result.commit) {
+  session.processCommit(result.commit)
+}
+
+if (welcomeBuffer) {
+  session.processWelcome(welcomeBuffer)
+}
+
+if (session.getState().ready) {
+  session.encryptOpus(packet)
+  session.decrypt(remoteUserId, GoDave.MediaType.AUDIO, incomingPacket)
+}
+```
+
+Use `handleGatewayBinaryPacket(...)`, `getKeyPackagePacket()`, and `encodeCommitWelcomePacket(...)` when you want the library to also handle the GoChat binary packet format directly.
 
 Call `session.dispose()` when the page, worker, or Electron view is done with the session.
 
