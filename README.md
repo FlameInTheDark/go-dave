@@ -1,105 +1,160 @@
 # go-dave
 
-`go-dave` is a Go implementation of DAVE session management and WebRTC frame encryption.
-It includes a native Go API and a WASM package for browser and Electron apps published as `@flameinthedark/go-dave`.
+`go-dave` is a DAVE implementation for Go, browsers, and Electron. DAVE is the end-to-end encryption protocol used for encrypted WebRTC voice and video sessions.
 
-## What it includes
+Protocol reference: [daveprotocol.com](https://daveprotocol.com/)
 
-- DAVE/MLS session lifecycle helpers.
-- Audio and video frame encryption/decryption for insertable streams.
-- Binary packet helpers for gateway opcodes `25` through `30`.
-- Pairwise fingerprint and verification code helpers.
+Use it to:
+
+- create and advance DAVE/MLS sessions
+- exchange key material with your gateway or voice server
+- encrypt outgoing encoded audio and video frames
+- decrypt incoming encoded audio and video frames
+- show verification codes and fingerprints to users
+
+The project ships in two forms:
+
+- native Go: `github.com/FlameInTheDark/go-dave`
+- browser and Electron WASM: `@flameinthedark/go-dave`
 
 ## Install
-
-Native Go:
 
 ```bash
 go get github.com/FlameInTheDark/go-dave
 ```
 
-Browser or Electron:
-
 ```bash
 npm install @flameinthedark/go-dave
 ```
 
-## Quick start
+## Quick Start
 
-Native Go:
+Most integrations only need a single `DAVESession` and a handful of methods.
+
+### Native Go
 
 ```go
+import dave "github.com/FlameInTheDark/go-dave"
+
+// Create one session per user in the voice channel.
 session, err := dave.NewDAVESession(dave.DAVEProtocolVersion, userID, channelID, nil)
 if err != nil {
 	log.Fatal(err)
 }
 
+// Set the external sender announced by the gateway.
 if err := session.SetExternalSender(externalSenderBuffer); err != nil {
 	log.Fatal(err)
 }
 
-result, err := session.ProcessProposals(dave.ProposalsAppend, proposalsBuffer, recognizedUserIDs)
+// Send this key package to your gateway or voice server.
+keyPackage, err := session.GetSerializedKeyPackage()
 if err != nil {
 	log.Fatal(err)
 }
 
+// Apply proposals as the roster changes.
+result, err := session.ProcessProposals(
+	dave.ProposalsAppend,
+	proposalsBuffer,
+	recognizedUserIDs,
+)
+if err != nil {
+	log.Fatal(err)
+}
+
+// Apply the commit produced for this session, or a welcome if you joined through one.
 if result != nil && len(result.Commit) > 0 {
 	if err := session.ProcessCommit(result.Commit); err != nil {
 		log.Fatal(err)
 	}
 }
+if len(welcomeBuffer) > 0 {
+	if err := session.ProcessWelcome(welcomeBuffer); err != nil {
+		log.Fatal(err)
+	}
+}
 
+// Encrypt outgoing frames and decrypt incoming frames once the session is ready.
 if session.Ready() {
-	encrypted, err := session.EncryptOpus(packet)
+	encryptedPacket, err := session.EncryptOpus(outgoingPacket)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	decrypted, err := session.Decrypt(remoteUserID, dave.MediaTypeAudio, encrypted)
+	decryptedPacket, err := session.Decrypt(remoteUserID, dave.MediaTypeAudio, incomingPacket)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_ = decrypted
+	_ = keyPackage
+	_ = encryptedPacket
+	_ = decryptedPacket
 }
 ```
 
-Browser or Electron:
+### Browser And Electron
 
 ```ts
 import { loadGoDave } from '@flameinthedark/go-dave'
 
+// Load the bundled WASM runtime once for the whole app.
 const GoDave = await loadGoDave()
-const session = GoDave.createSession(GoDave.DAVE_PROTOCOL_VERSION, userId, channelId)
 
+// Create one session per user in the voice channel.
+const session = GoDave.createSession(
+  GoDave.DAVE_PROTOCOL_VERSION,
+  userId,
+  channelId,
+)
+
+// Set the external sender announced by the gateway.
 session.setExternalSender(externalSenderBuffer)
 
+// Send this key package to your gateway or voice server.
+const keyPackage = session.getSerializedKeyPackage()
+
+// Apply proposals as the roster changes.
 const result = session.processProposals(
   GoDave.ProposalsOperationType.APPEND,
   proposalsBuffer,
   recognizedUserIds,
 )
 
+// Apply the commit produced for this session, or a welcome if you joined through one.
 if (result.commit) {
   session.processCommit(result.commit)
 }
+if (welcomeBuffer) {
+  session.processWelcome(welcomeBuffer)
+}
 
+// Encrypt outgoing frames and decrypt incoming frames once the session is ready.
 if (session.getState().ready) {
-  const encrypted = session.encryptOpus(packet)
-  if (encrypted) {
-    const decrypted = session.decrypt(remoteUserId, GoDave.MediaType.AUDIO, encrypted)
-    if (decrypted) {
-      console.log(decrypted)
-    }
+  const encryptedPacket = session.encryptOpus(outgoingPacket)
+  if (encryptedPacket) {
+    console.log('send encrypted packet', encryptedPacket)
+  }
+
+  const decryptedPacket = session.decrypt(
+    remoteUserId,
+    GoDave.MediaType.AUDIO,
+    incomingPacket,
+  )
+  if (decryptedPacket) {
+    console.log({ keyPackage, decryptedPacket })
   }
 }
 ```
 
-Recoverable frame-path failures in WASM are logged with `console.warn(...)` and return `null` instead of terminating the runtime.
+`encrypt(...)`, `encryptOpus(...)`, and `decrypt(...)` return `null` in WASM when a frame is intentionally dropped. Recoverable frame-path failures are logged with `console.warn(...)` instead of terminating the runtime.
 
 ## Guides
 
 - [Documentation index](./docs/README.md)
+- [Overview and concepts](./docs/overview.md)
 - [Native Go guide](./docs/native-go.md)
 - [Browser and Electron guide](./docs/wasm.md)
+- [Gateway packet guide](./docs/gateway-packets.md)
+- [Insertable Streams and runtime notes](./docs/insertable-streams.md)
 - [Runnable native example](./examples/native/main.go)

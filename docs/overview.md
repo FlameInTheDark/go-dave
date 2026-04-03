@@ -5,6 +5,8 @@
 `go-dave` is a DAVE implementation built around one core idea:
 one `DAVESession` represents one user in one voice channel.
 
+For the protocol itself, see [daveprotocol.com](https://daveprotocol.com/).
+
 That session owns:
 
 - MLS group state

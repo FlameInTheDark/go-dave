@@ -16,6 +16,20 @@
   "bugs": {
     "url": "https://github.com/FlameInTheDark/go-dave/issues"
   },
+  "keywords": [
+    "dave",
+    "webrtc",
+    "e2ee",
+    "mls",
+    "wasm",
+    "webassembly",
+    "browser",
+    "electron",
+    "insertable-streams",
+    "golang",
+    "discord",
+    "gochat"
+  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
