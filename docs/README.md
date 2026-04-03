@@ -15,7 +15,7 @@ The guides below cover the longer flows and app integration details.
 ## What to open
 
 - Open [overview.md](./overview.md) if you want the high-level mental model and which entry points to use.
-- Open [server.md](./server.md) if you want the server-side coordinator, Pion forwarding flow, or GoChat-style gateway helpers.
+- Open [server.md](./server.md) if you want the server-side coordinator, Pion forwarding flow, or generic gateway helpers.
 - Open [native-go.md](./native-go.md) if you want the Go session lifecycle, packet helpers, media encryption, or verification helpers.
 - Open [wasm.md](./wasm.md) if you want browser/Electron usage, React + TypeScript notes, insertable streams, or build-from-source instructions.
 - Open [gateway-packets.md](./gateway-packets.md) if your app deals directly with opcode `25` through `30`.
