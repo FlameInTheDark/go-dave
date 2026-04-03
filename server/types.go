@@ -2,7 +2,7 @@ package server
 
 import "time"
 
-// SignalProtocolVersion is the GoChat-style voice gateway protocol version
+// SignalProtocolVersion is the voice gateway protocol version
 // that supports DAVE transitions.
 const SignalProtocolVersion = 2
 

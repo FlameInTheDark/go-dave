@@ -7,10 +7,10 @@ import (
 	dave "github.com/FlameInTheDark/go-dave"
 )
 
-// BinaryOpcode is a GoChat-style DAVE binary opcode.
+// BinaryOpcode is a gateway binary DAVE opcode.
 type BinaryOpcode = dave.GatewayBinaryOpcode
 
-// GoChat DAVE binary opcodes.
+// Gateway DAVE binary opcodes.
 const (
 	OpcodeExternalSenderPackage BinaryOpcode = dave.GatewayBinaryOpcodeExternalSender
 	OpcodeKeyPackage            BinaryOpcode = dave.GatewayBinaryOpcodeKeyPackage
@@ -23,7 +23,7 @@ const (
 // ProposalsOperationType controls how a proposals packet should be applied.
 type ProposalsOperationType = dave.ProposalsOperationType
 
-// Proposal operation kinds used by GoChat DAVE packets.
+// Proposal operation kinds used by gateway DAVE packets.
 const (
 	ProposalsAppend ProposalsOperationType = dave.ProposalsAppend
 	ProposalsRevoke ProposalsOperationType = dave.ProposalsRevoke
@@ -199,7 +199,7 @@ func EncodeWelcome(msg Welcome) ([]byte, error) {
 	return out, nil
 }
 
-// DecodeBinaryMessage decodes a GoChat-style DAVE binary message.
+// DecodeBinaryMessage decodes a gateway DAVE binary message.
 func DecodeBinaryMessage(raw []byte) (*DecodedBinaryMessage, error) {
 	if len(raw) == 0 {
 		return nil, fmt.Errorf("binary message is empty")

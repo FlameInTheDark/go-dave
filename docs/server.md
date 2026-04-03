@@ -83,7 +83,7 @@ If a receiver does not support DAVE and a transition is in flight, the forwarder
 
 ## Binary Packet Helpers
 
-The server package also includes GoChat-style binary DAVE packet codecs:
+The server package also includes binary DAVE packet codecs:
 
 - `EncodeExternalSenderPackage(...)`
 - `EncodeKeyPackage(...)`
