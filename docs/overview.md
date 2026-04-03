@@ -15,9 +15,10 @@ That session owns:
 - frame decryption state
 - verification helpers
 
-The project exposes the same core behavior in two environments:
+The project exposes the same core behavior in three environments:
 
 - native Go for servers, tools, and backend integrations
+- server-side helpers for voice gateways and Pion SFUs through `github.com/FlameInTheDark/go-dave/server`
 - WASM for browser and Electron apps through `@flameinthedark/go-dave`
 
 ## Which API should you use?
@@ -46,6 +47,12 @@ Use the WASM package if your app runs in:
 - Electron
 - React web clients using insertable streams
 
+Use the server package if your app is:
+
+- a Go voice gateway
+- a Pion-based SFU
+- responsible for DAVE membership, transitions, and RTP forwarding
+
 ## Typical lifecycle
 
 1. Create a session.
@@ -58,6 +65,7 @@ Use the WASM package if your app runs in:
 ## Guides by job
 
 - [Native Go guide](./native-go.md)
+- [Server and Pion guide](./server.md)
 - [Browser and Electron guide](./wasm.md)
 - [Gateway packet guide](./gateway-packets.md)
 - [Insertable Streams and runtime notes](./insertable-streams.md)
@@ -65,5 +73,6 @@ Use the WASM package if your app runs in:
 ## Practical starting points
 
 - [examples/native/main.go](../examples/native/main.go) for a runnable Go flow
+- [examples/server/main.go](../examples/server/main.go) for a runnable server-side flow
 - [wasm/index.d.ts](../wasm/index.d.ts) for the published TypeScript surface
 - [docs/insertable-streams.md](./insertable-streams.md) for browser and Electron media handling
