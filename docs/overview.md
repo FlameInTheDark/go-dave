@@ -21,6 +21,27 @@ The project exposes the same core behavior in three environments:
 - server-side helpers for voice gateways and Pion SFUs through `github.com/FlameInTheDark/go-dave/server`
 - WASM for browser and Electron apps through `@flameinthedark/go-dave`
 
+## Transport security layers
+
+DAVE is not a replacement for WebRTC transport security.
+
+In a typical WebRTC stack, the layers look like this:
+
+`ICE -> DTLS -> SRTP -> DAVE -> encoded media`
+
+- `ICE` connects the peers
+- `DTLS` authenticates the transport and derives SRTP keys
+- `SRTP` protects RTP packets on each hop
+- `DAVE` protects the media end to end across the session
+
+That means DAVE and DTLS work together:
+
+- browsers and Electron apps still use the normal `RTCPeerConnection` transport
+- Pion servers and native Go peers should still use normal Pion ICE, DTLS, and SRTP
+- `go-dave` should be attached above that layer, where you already handle encoded media and DAVE control messages
+
+If you are using Pion, see [server.md](./server.md) for the practical DTLS and transport setup notes.
+
 ## Which API should you use?
 
 Use the direct session API if your app already knows how to move gateway payloads around:
