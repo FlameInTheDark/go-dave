@@ -10,7 +10,7 @@ import (
 
 const maxMLSVarintValue = 1<<30 - 1
 
-// GatewayBinaryOpcode is the GoChat binary DAVE opcode.
+// GatewayBinaryOpcode is the gateway binary DAVE opcode.
 type GatewayBinaryOpcode uint8
 
 const (
@@ -22,7 +22,7 @@ const (
 	GatewayBinaryOpcodeWelcome        GatewayBinaryOpcode = 30
 )
 
-// GatewayBinaryPacket is a server-to-client DAVE packet in GoChat wire format:
+// GatewayBinaryPacket is a server-to-client DAVE packet in the gateway wire format:
 // [seq:u16][opcode:u8][payload...].
 type GatewayBinaryPacket struct {
 	Sequence uint16
@@ -47,7 +47,7 @@ type GatewayBinaryResult struct {
 	SendTransitionReady bool
 }
 
-// ParseGatewayBinaryPacket parses a server-to-client GoChat DAVE packet.
+// ParseGatewayBinaryPacket parses a server-to-client gateway DAVE packet.
 func ParseGatewayBinaryPacket(data []byte) (*GatewayBinaryPacket, error) {
 	if len(data) < 3 {
 		return nil, fmt.Errorf("gateway binary packet too short: got %d bytes", len(data))
@@ -61,7 +61,7 @@ func ParseGatewayBinaryPacket(data []byte) (*GatewayBinaryPacket, error) {
 }
 
 // EncodeKeyPackagePacket wraps an MLS key package in the client-to-server
-// GoChat wire format: [opcode:u8][opaqueVec(keyPackage)].
+// gateway wire format: [opcode:u8][opaqueVec(keyPackage)].
 func EncodeKeyPackagePacket(keyPackage []byte) ([]byte, error) {
 	if len(keyPackage) == 0 {
 		return nil, fmt.Errorf("key package cannot be empty")
@@ -79,7 +79,7 @@ func EncodeKeyPackagePacket(keyPackage []byte) ([]byte, error) {
 }
 
 // EncodeCommitWelcomePacket wraps a commit and optional welcome in the
-// client-to-server GoChat wire format:
+// client-to-server gateway wire format:
 // [opcode:u8][opaqueVec(commit)][opaqueVec(welcome)?].
 func EncodeCommitWelcomePacket(commit []byte, welcome []byte) ([]byte, error) {
 	if len(commit) == 0 {
@@ -174,7 +174,7 @@ func ShouldBeCommitter(selfUserID string, recognizedUserIDs []string) bool {
 }
 
 // GetKeyPackagePacket creates a new MLS key package and returns it already
-// wrapped as a client-to-server GoChat DAVE packet.
+// wrapped as a client-to-server gateway DAVE packet.
 func (s *DAVESession) GetKeyPackagePacket() ([]byte, error) {
 	keyPackage, err := s.GetSerializedKeyPackage()
 	if err != nil {
@@ -184,7 +184,7 @@ func (s *DAVESession) GetKeyPackagePacket() ([]byte, error) {
 }
 
 // HandleGatewayBinaryPacket parses and handles an inbound server-to-client
-// GoChat DAVE packet.
+// gateway DAVE packet.
 func (s *DAVESession) HandleGatewayBinaryPacket(packet []byte, recognizedUserIDs []string) (*GatewayBinaryResult, error) {
 	parsed, err := ParseGatewayBinaryPacket(packet)
 	if err != nil {
@@ -193,7 +193,7 @@ func (s *DAVESession) HandleGatewayBinaryPacket(packet []byte, recognizedUserIDs
 	return s.HandleGatewayBinaryMessage(parsed.Sequence, parsed.Opcode, parsed.Payload, recognizedUserIDs)
 }
 
-// HandleGatewayBinaryMessage handles a parsed inbound server-to-client GoChat
+// HandleGatewayBinaryMessage handles a parsed inbound server-to-client gateway
 // DAVE message and returns any follow-up data the client may want to send or
 // act on.
 func (s *DAVESession) HandleGatewayBinaryMessage(sequence uint16, opcode GatewayBinaryOpcode, payload []byte, recognizedUserIDs []string) (*GatewayBinaryResult, error) {

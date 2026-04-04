@@ -12,9 +12,10 @@ Use it to:
 - decrypt incoming encoded audio and video frames
 - show verification codes and fingerprints to users
 
-The project ships in two forms:
+The project ships in three forms:
 
 - native Go: `github.com/FlameInTheDark/go-dave`
+- server-side Go for voice gateways and Pion SFUs: `github.com/FlameInTheDark/go-dave/server`
 - browser and Electron WASM: `@flameinthedark/go-dave`
 
 ## Install
@@ -153,8 +154,10 @@ if (session.getState().ready) {
 
 - [Documentation index](./docs/README.md)
 - [Overview and concepts](./docs/overview.md)
+- [Server and Pion guide](./docs/server.md)
 - [Native Go guide](./docs/native-go.md)
 - [Browser and Electron guide](./docs/wasm.md)
 - [Gateway packet guide](./docs/gateway-packets.md)
 - [Insertable Streams and runtime notes](./docs/insertable-streams.md)
 - [Runnable native example](./examples/native/main.go)
+- [Runnable server example](./examples/server/main.go)
